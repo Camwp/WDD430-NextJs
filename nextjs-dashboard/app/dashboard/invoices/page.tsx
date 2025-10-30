@@ -5,6 +5,7 @@ import { CreateInvoice } from '@/app/ui/invoices/buttons';
 import { lusitana } from '@/app/ui/fonts';
 import { InvoicesTableSkeleton } from '@/app/ui/skeletons';
 import { Suspense } from 'react';
+import { fetchInvoicesPages } from '@/app/lib/data';
 
 export default function Page({
     searchParams,
@@ -22,13 +23,10 @@ export default function Page({
                 <CreateInvoice />
             </div>
 
+            {/* Suspense for table + pagination data */}
             <Suspense fallback={<InvoicesTableSkeleton />}>
                 <InvoicesSection searchParamsPromise={searchParams} />
             </Suspense>
-
-            <div className="mt-5 flex w-full justify-center">
-                {/* <Pagination totalPages={totalPages} /> */}
-            </div>
         </div>
     );
 }
@@ -42,5 +40,15 @@ async function InvoicesSection({
     const query = sp.query ?? '';
     const currentPage = Number(sp.page ?? '1') || 1;
 
-    return <Table query={query} currentPage={currentPage} />;
+    // ✅ Fetch total pages safely here
+    const totalPages = await fetchInvoicesPages(query);
+
+    return (
+        <>
+            <Table query={query} currentPage={currentPage} />
+            <div className="mt-5 flex w-full justify-center">
+                <Pagination totalPages={totalPages} />
+            </div>
+        </>
+    );
 }
