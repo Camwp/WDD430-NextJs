@@ -49,20 +49,18 @@ export async function updateInvoice(id: string, formData: FormData) {
     redirect('/dashboard/invoices');
 }
 
-export async function deleteInvoice(id: string) {
-
+export async function deleteInvoice(id: string): Promise<void> {
     try {
-
-
         await sql`DELETE FROM invoices WHERE id = ${id}`;
     } catch (error) {
-        return {
-            message: 'Database Error: Failed to update Invoice.',
-        };
+        console.error(error);
+        // Throw, don't return an object — keeps type as Promise<void>
+        throw new Error('Database Error: Failed to delete invoice.');
     }
-
     revalidatePath('/dashboard/invoices');
 }
+
+
 export async function createInvoice(formData: FormData) {
     const { customerId, amount, status } = CreateInvoice.parse({
         customerId: formData.get('customerId'),
