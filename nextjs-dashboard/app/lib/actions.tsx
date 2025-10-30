@@ -61,7 +61,7 @@ export async function deleteInvoice(id: string): Promise<void> {
 }
 
 
-export async function createInvoice(formData: FormData) {
+export async function createInvoice(formData: FormData): Promise<void> {
     const { customerId, amount, status } = CreateInvoice.parse({
         customerId: formData.get('customerId'),
         amount: formData.get('amount'),
@@ -76,12 +76,9 @@ export async function createInvoice(formData: FormData) {
       INSERT INTO invoices (customer_id, amount, status, date)
       VALUES (${customerId}, ${amountInCents}, ${status}, ${date})
     `;
-    } catch (error) {
-        // We'll also log the error to the console for now
-        console.error(error);
-        return {
-            message: 'Database Error: Failed to Create Invoice.',
-        };
+    } catch (err) {
+        console.error(err);
+        throw new Error('Database Error: Failed to Create Invoice.');
     }
 
     revalidatePath('/dashboard/invoices');
