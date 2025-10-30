@@ -20,9 +20,8 @@ const CreateInvoice = FormSchema.omit({ id: true, date: true });
 // Use Zod to update the expected types
 const UpdateInvoice = FormSchema.omit({ id: true, date: true });
 
-// ...
 
-export async function updateInvoice(id: string, formData: FormData) {
+export async function updateInvoice(id: string, formData: FormData): Promise<void> {
     const { customerId, amount, status } = UpdateInvoice.parse({
         customerId: formData.get('customerId'),
         amount: formData.get('amount'),
@@ -30,20 +29,18 @@ export async function updateInvoice(id: string, formData: FormData) {
     });
 
     const amountInCents = amount * 100;
+
     try {
         await sql`
-    UPDATE invoices
-    SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
-    WHERE id = ${id}
-  `;
+      UPDATE invoices
+      SET customer_id = ${customerId}, amount = ${amountInCents}, status = ${status}
+      WHERE id = ${id}
+    `;
     } catch (error) {
-        // We'll also log the error to the console for now
         console.error(error);
-        return {
-            message: 'Database Error: Failed to update Invoice.',
-        };
+        // Throw (keeps return type Promise<void>), don't return an object
+        throw new Error('Database Error: Failed to update Invoice.');
     }
-
 
     revalidatePath('/dashboard/invoices');
     redirect('/dashboard/invoices');
